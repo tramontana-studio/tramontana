@@ -71,24 +71,49 @@ function initWordmark(stage, settings) {
   });
   stage.appendChild(word);
 
-  function draw() {
-    const width = parseFloat(getComputedStyle(stage).width);
-    const height = parseFloat(getComputedStyle(stage).height);
-    const fontSize = Math.min(width / 18, 72);
-    const n = LETTERS.length;
+  spans.forEach((s) => { s.style.willChange = 'transform'; });
+
+  // Size and position only change on resize / font load, so measure them then,
+  // not on every frame (reading styles every frame forced extra layout work).
+  let fontSize = 0;
+  function measure() {
+    const cs = getComputedStyle(stage);
+    const width = parseFloat(cs.width);
+    const height = parseFloat(cs.height);
+    fontSize = Math.min(width / 18, 72);
     word.style.fontSize = fontSize + 'px';
+    word.style.left = width * 0.1 + 'px';
+    word.style.top = (settings.flush ? flushTop(fontSize) : height - fontSize) + 'px';
+  }
+  measure();
+  Stage.onChange(measure);
+  if (document.fonts) document.fonts.ready.then(measure);
+
+  // Letters are shifted with transforms instead of margins, so the browser can move
+  // them without re-laying out the page on every frame.
+  const n = LETTERS.length;
+  function draw() {
+    let offset = 0;
     spans.forEach((s, i) => {
       if (i === 0) return;
       const phase = ((i - 1) / (n - 1)) * Math.PI * 2 * FREQ;
       const wave = (i / (n - 1)) * amp * ((1 + Math.sin(t + phase)) / 2);
-      s.style.marginLeft = wave + EXTRA_SPACES[i] * fontSize * 0.25 + 'px';
+      offset += wave + EXTRA_SPACES[i] * fontSize * 0.25;
+      s.style.transform = `translateX(${offset}px)`;
     });
-    word.style.left = width * 0.1 + 'px';
-    word.style.top = (settings.flush ? flushTop(fontSize) : height - fontSize) + 'px';
     t += speed * 0.03;
-    requestAnimationFrame(draw);
   }
-  requestAnimationFrame(draw);
+
+  // Only animate while the wordmark is on screen.
+  let visible = true, frame = 0;
+  const loop = () => { draw(); frame = visible ? requestAnimationFrame(loop) : 0; };
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !frame) frame = requestAnimationFrame(loop);
+    }).observe(stage);
+  }
+  frame = requestAnimationFrame(loop);
 }
 
 function initCities(container) {

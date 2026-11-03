@@ -155,6 +155,8 @@ const ANIMATIONS = {
   }
 
   function buildTimeline(el, def) {
+    // Give animated elements their own GPU layer so moving them doesn't repaint the page.
+    el.style.willChange = 'transform, opacity';
     const steps = Array.isArray(def) ? def : def.steps;
     const offscreen = el.matches(START_OFFSCREEN);
     const lastMove = steps.map((s) => s.y !== undefined).lastIndexOf(true);
@@ -192,10 +194,17 @@ const ANIMATIONS = {
     }
 
     if (timeline.offscreen && scroll < segments[0].start) value = { ...value, opacity: 0 };
-    el.style.transform = value.x || value.y ? `translate(${value.x}px, ${value.y}px)` : '';
-    el.style.opacity = value.opacity;
-    el.style.pointerEvents = value.opacity < 0.05 ? 'none' : '';
-    el.style.visibility = value.opacity < 0.01 ? 'hidden' : '';
+
+    // Only write styles that changed since the last frame.
+    const transform = value.x || value.y ? `translate3d(${value.x}px, ${value.y}px, 0)` : '';
+    const opacity = String(Math.round(value.opacity * 1000) / 1000);
+    const pointer = value.opacity < 0.05 ? 'none' : '';
+    const visibility = value.opacity < 0.01 ? 'hidden' : '';
+    const last = timeline.last || (timeline.last = {});
+    if (last.transform !== transform) el.style.transform = last.transform = transform;
+    if (last.opacity !== opacity) el.style.opacity = last.opacity = opacity;
+    if (last.pointer !== pointer) el.style.pointerEvents = last.pointer = pointer;
+    if (last.visibility !== visibility) el.style.visibility = last.visibility = visibility;
   }
 
   function tabletShift() {
@@ -209,7 +218,7 @@ const ANIMATIONS = {
   }
 
   function build() {
-    timelines.forEach(({ el }) => { el.style.transform = el.style.opacity = el.style.pointerEvents = el.style.visibility = ''; });
+    timelines.forEach(({ el }) => { el.style.transform = el.style.opacity = el.style.pointerEvents = el.style.visibility = ''; el.style.willChange = ''; });
     const config = Stage.isPhone() ? { ...ANIMATIONS.desktop, ...ANIMATIONS.phone }
       : Stage.isTablet() ? { ...ANIMATIONS.desktop, ...ANIMATIONS.tablet } : ANIMATIONS.desktop;
     const make = () => Object.entries(config).flatMap(([selector, def]) =>
