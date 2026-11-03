@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>tramontana</title>
+  <meta name="description" content="Creative studio made by humans playing with technology and culture.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+  <div class="header-fade" aria-hidden="true"></div>
+  <header>
+    <div class="wordmark wordmark--header" data-wordmark="header" aria-label="tramontana"></div>
+    <button class="coords" type="button" data-toggle="about">38.0171° N, 12.5074° E</button>
+    <a class="contact" href="#footer">Contact</a>
+  </header>
+
+  <p class="hero-text">
+    We turn <span class="sans">bold perspectives</span> into <span class="sans">beautiful things</span>
+    you can interact with, from sharp brand identities to cutting-edge crossmedia platforms.
+  </p>
+
+  <video class="hero-reel" src="assets/tramontana_reel.mp4" autoplay muted loop playsinline preload="auto" aria-label="Project showcase"></video>
+
+  <div class="cards">
+  <article class="card card--pink">
+    <h2 class="card__title">Defining Compass</h2>
+    <p class="card__sub">Analysis, Launch, Positioning</p>
+    <ul class="card__list">
+      <li>Audit and Foresights</li>
+      <li>Workshop</li>
+      <li>Creative Direction</li>
+      <li>Brand Strategy</li>
+      <li>Naming &amp; Tone of Voice</li>
+      <li>Communication Strategy</li>
+    </ul>
+  </article>
+
+  <article class="card card--yellow">
+    <h2 class="card__title">Designing systems</h2>
+    <p class="card__sub">Platforms, Touchpoints, Experiences</p>
+    <ul class="card__list">
+      <li>Visual Identity and Design System</li>
+      <li>Digital Strategy</li>
+      <li>Websites &amp; Webapp</li>
+      <li>Experience Strategy</li>
+      <li>User Journey Mapping</li>
+    </ul>
+  </article>
+
+  <article class="card card--blue">
+    <h2 class="card__title">Building momentum</h2>
+    <p class="card__sub">Content, Campaigns, Ongoing</p>
+    <ul class="card__list">
+      <li>Copywriting</li>
+      <li>Social Media and Content Strategy</li>
+      <li>Editorial</li>
+      <li>Crossmedia Campaigns</li>
+      <li>Brand Partnerships</li>
+      <li>Cultural Programming</li>
+    </ul>
+  </article>
+  </div>
+
+  <div class="about popup" id="about" role="dialog" aria-label="About tramontana">
+    <div class="about__text">
+      <p><span class="sans">tramontana</span> is a re-generative force that brings clarity and chaos at once, opening to new possibilities.</p>
+      <p class="about__lead">For centuries, that wind has named the ancient city walls in our home town in the middle of the mediterranean.</p>
+      <p>Today, they define this studio, shaping our vision and fueling our logo, dynamically connected with the neverending energy blowing against those stones.</p>
+    </div>
+    <button class="close" type="button" data-toggle="about">close</button>
+    <div class="weather" data-weather></div>
+  </div>
+
+  <main class="page">
+
+    <picture>
+      <source media="(max-width: 599px)" srcset="assets/tramontana_gradient.jpg">
+      <img class="hero-bg" alt="" src="assets/tramontana_gradient.jpg">
+    </picture>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Perfection is a nightmare.   Good is boring, nasty is empty.   Good taste will never be artificial.   We know if you know you know.   </span>
+        <span>Perfection is a nightmare.   Good is boring, nasty is empty.   Good taste will never be artificial.   We know if you know you know.   </span>
+      </div>
+    </div>
+
+    <div class="team-bg"></div>
+
+    <picture>
+      <source media="(max-width: 599px)" srcset="assets/tramontana_gradient.jpg">
+      <img class="footer-bg" alt="" src="assets/tramontana_gradient.jpg">
+    </picture>
+
+    <div class="footer-white" id="footer"></div>
+
+    <div class="snap snap--hero"></div>
+    <div class="snap snap--services"></div>
+    <div class="snap snap--team"></div>
+    <div class="snap snap--footer"></div>
+
+    <div class="col">
+      <div class="hero-caption">
+        <p class="intro">Creative studio made by humans playing with technology and culture.</p>
+        <div class="cities cities--top" data-cities></div>
+      </div>
+
+      <img class="team-photo" data-toggle="team" alt="Gaël Moscarà and Giampiero Riggio"
+           src="assets/tramontana_portrait.webp">
+
+      <img class="team-plus" src="assets/plus_w.png" alt="" aria-hidden="true">
+
+    <div class="team-popup popup" id="team" role="dialog" aria-label="Team">
+        <p class="bio bio--1"><span class="bio__name"><span class="sans">Gaël,</span> Milan.</span>
+          With a semiotic background applied to digital and social media, he led the strategy in international projects within AKQA and WPP, bridging business acumen and people-centered storytelling. Over the last four years, he led marketing and communication for two innovative hospitality brands, shaping their narrative at the intersection of lifestyle and culture.</p>
+        <p class="bio bio--2"><span class="bio__name"><span class="sans">Giampiero,</span> Berlin.</span>
+          Through both agency and personal projects, he has developed a sharp expertise in blending experience design, branding, and art direction. As UX/UI Director at WongDoody, he led cross‑disciplinary teams for global and German clients, delivering experiences that fuse storytelling, interaction, and system‑level thinking.</p>
+        <button class="close" type="button" data-toggle="team">close</button>
+      </div>
+
+      <div class="team-names">
+        <div class="member">
+          <h3 class="member__name">Gaël Moscarà</h3>
+          <p class="member__meta"><span>STRATEGY</span><a href="mailto:gael@tramontana.studio">gael@tramontana.studio</a></p>
+        </div>
+        <div class="member">
+          <h3 class="member__name">Giampiero Riggio</h3>
+          <p class="member__meta"><span>DESIGN</span><a href="mailto:giampiero@tramontana.studio">giampiero@tramontana.studio</a></p>
+        </div>
+      </div>
+
+      <p class="story">
+        Started as <span class="sans">curiosity-driven</span> kids building websites in 2000, we then walked parallel professional paths.
+        Today, we bring <span class="sans">over 15 years of experience</span> gained in international agencies and category-defining companies.
+      </p>
+
+      <img class="sun" alt="" src="assets/tramontana_glow.png">
+
+      <p class="motto">it takes clear skies to enjoy rough waters</p>
+
+      <div class="cities cities--footer" data-cities></div>
+
+      <a class="footer-link footer-link--instagram" href="https://www.instagram.com/tramontana.studio/" target="_blank" rel="noopener">Instagram</a>
+      <a class="footer-link footer-link--linkedin" href="https://www.linkedin.com/company/tramontanastudio/" target="_blank" rel="noopener">Linkedin</a>
+      <a class="footer-link footer-link--email" href="mailto:ciao@tramontana.studio">ciao@tramontana.studio</a>
+
+      <div class="wordmark wordmark--footer" data-wordmark="footer" aria-hidden="true"></div>
+      <p class="no-cookies">No coookies, no policy</p>
+    </div>
+  </main>
+
+  <script src="js/stage.js"></script>
+  <script src="js/scroll-animations.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
