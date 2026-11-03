@@ -178,7 +178,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .footer-link--linkedin  { left: 606px; }
 .footer-link--email     { left: 774px; }
 
-.wordmark--footer { left: -69px; top: 4803px; width: 675px; height: 65px; z-index: 323; }
+/* bottom edge = bottom of the page (4801 + 65 = 4866) */
+.wordmark--footer { left: -69px; top: 4801px; width: 675px; height: 65px; z-index: 323; }
 .no-cookies { left: 774px; top: 4848px; font: var(--font-micro); z-index: 348; }
 
 .hero-bg    { cursor: url("../assets/cursors/arrow-down.svg") 30 30, s-resize; }

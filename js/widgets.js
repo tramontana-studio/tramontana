@@ -29,8 +29,10 @@ const Wind = (() => {
 
 const WORDMARK_SETTINGS = {
 
-  header: { flush: true, speedMin: 0.5, speedMax: 3, ampMin: 5,  ampMax: 30 },
-  footer: { flush: () => Stage.isPhone(), speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
+  header: { align: 'flush', speedMin: 0.5, speedMax: 3, ampMin: 5,  ampMax: 30 },
+  // phone: letters start right under the gradient module; desktop/tablet: letters sit
+  // on the very bottom edge of the page (baseline = bottom, "tramontana" has no descenders)
+  footer: { align: () => (Stage.isPhone() ? 'flush' : 'baseline'), speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
 };
 
 function initWordmark(stage, settings) {
@@ -46,17 +48,19 @@ function initWordmark(stage, settings) {
     amp = map(w.gusts, settings.ampMin, settings.ampMax);
   });
 
-  const flushCache = {};
-  function flushTop(fontSize) {
+  // Where the text baseline and the top of the letters sit inside a line of height
+  // fontSize, measured from the real font so alignment stays exact.
+  const metricsCache = {};
+  function fontMetrics(fontSize) {
     const key = fontSize + '|' + document.fonts.status;
-    if (flushCache.key === key) return flushCache.top;
+    if (metricsCache.key === key) return metricsCache.value;
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = `400 ${fontSize}px ${getComputedStyle(stage).getPropertyValue('--sans') || 'sans-serif'}`;
     const m = ctx.measureText(LETTERS.join(''));
     const baseline = (fontSize - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
-    flushCache.key = key;
-    flushCache.top = m.actualBoundingBoxAscent - baseline;
-    return flushCache.top;
+    metricsCache.key = key;
+    metricsCache.value = { baseline, inkTop: baseline - m.actualBoundingBoxAscent };
+    return metricsCache.value;
   }
 
   const word = document.createElement('div');
@@ -83,8 +87,12 @@ function initWordmark(stage, settings) {
     fontSize = Math.min(width / 18, 72);
     word.style.fontSize = fontSize + 'px';
     word.style.left = width * 0.1 + 'px';
-    const flush = typeof settings.flush === 'function' ? settings.flush() : settings.flush;
-    word.style.top = (flush ? flushTop(fontSize) : height - fontSize) + 'px';
+    const align = typeof settings.align === 'function' ? settings.align() : settings.align;
+    const fm = fontMetrics(fontSize);
+    const top = align === 'flush' ? -fm.inkTop            // top of letters on the top edge
+      : align === 'baseline' ? height - fm.baseline        // bottom of letters on the bottom edge
+      : height - fontSize;
+    word.style.top = top + 'px';
   }
   measure();
   Stage.onChange(measure);
