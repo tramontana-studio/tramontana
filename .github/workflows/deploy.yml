@@ -10,16 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          local-dir: ./
-          exclude: |
-            **/.git*
-            **/.git*/**
-            .github/**
-            README.md
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Upload via SFTP
+        env:
+          SFTP_HOST: ${{ secrets.FTP_SERVER }}
+          SFTP_USER: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SFTP_DIR: ${{ secrets.FTP_SERVER_DIR }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT || '22' }}
+        run: |
+          lftp -c "
+            set sftp:auto-confirm yes
+            set net:max-retries 2
+            open --env-password -u $SFTP_USER -p $SFTP_PORT sftp://$SFTP_HOST
+            mirror -R --verbose -x '^\.git' -x '^README\.md$' ./ $SFTP_DIR
+          "
