@@ -30,7 +30,7 @@ const Wind = (() => {
 const WORDMARK_SETTINGS = {
 
   header: { flush: true, speedMin: 0.5, speedMax: 3, ampMin: 5,  ampMax: 30 },
-  footer: { speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
+  footer: { flush: () => Stage.isPhone(), speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
 };
 
 function initWordmark(stage, settings) {
@@ -83,7 +83,8 @@ function initWordmark(stage, settings) {
     fontSize = Math.min(width / 18, 72);
     word.style.fontSize = fontSize + 'px';
     word.style.left = width * 0.1 + 'px';
-    word.style.top = (settings.flush ? flushTop(fontSize) : height - fontSize) + 'px';
+    const flush = typeof settings.flush === 'function' ? settings.flush() : settings.flush;
+    word.style.top = (flush ? flushTop(fontSize) : height - fontSize) + 'px';
   }
   measure();
   Stage.onChange(measure);

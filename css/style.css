@@ -306,6 +306,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .footer-link--instagram { left: 0;     top: calc(4930px + var(--shift)); }
   .footer-link--linkedin  { left: 170px; top: calc(4930px + var(--shift)); }
   .footer-link--email     { left: 0;     top: calc(4960px + var(--shift)); }
-  .wordmark--footer { left: -35px; top: calc(4779px + var(--shift)); width: 361px; height: 35px; }
+  /* starts exactly where the gradient footer module (.footer-bg) ends */
+  .wordmark--footer { left: -35px; top: calc(4800px + var(--shift)); width: 361px; height: 35px; }
   .no-cookies { left: 0; top: calc(5060px + var(--shift)); font-size: 12px; line-height: 12px; }
 }
