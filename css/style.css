@@ -184,7 +184,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .hero-bg    { cursor: url("../assets/cursors/arrow-down.svg") 30 30, s-resize; }
 .marquee    { cursor: url("../assets/cursors/arrow-down-small.svg") 20 20, s-resize; }
 .team-plus { display: none; }
-.snap { display: none; }
 .team-photo { cursor: url("../assets/cursors/plus.svg") 30 30, pointer; }
 .col { display: contents; }
 
@@ -289,12 +288,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
   .team-bg    { display: block; left: 0; top: calc(3481px + var(--g1)); width: 100%; height: calc(799px + var(--g2) + var(--g3)); background: var(--paper); z-index: 333; }
   .team-photo { left: 20px; top: calc(3481px + var(--g1)); width: calc(var(--vw, 320px) - 40px); height: 300px; z-index: 335; }
-  html { scroll-snap-type: y proximity; }
-  .snap { display: block; left: 0; width: 1px; height: 1px; scroll-snap-align: start; pointer-events: none; }
-  .snap--hero { top: 0; }
-  .snap--services { top: 2520px; }
-  .snap--team { top: calc(3481px + var(--g1) - 60px); }
-  .snap--footer { top: calc(4280px + var(--shift)); }
   .team-plus { display: block; left: calc(var(--vw, 320px) / 2 - 25px); top: calc(3481px + var(--g1) + 125px); width: 50px; height: 50px; z-index: 336; pointer-events: none; }
   .team-names { left: 0; top: calc(3775px + var(--g1) + var(--g2)); z-index: 338; }
   .story      { left: 0; top: calc(4280px + var(--shift)); width: calc(var(--vw, 320px) - 44px); line-height: 28px; z-index: 337; }
