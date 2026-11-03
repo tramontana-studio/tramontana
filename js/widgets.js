@@ -27,13 +27,56 @@ const Wind = (() => {
   return { subscribe(fn) { subscribers.push(fn); if (current) fn(current); } };
 })();
 
+// Text measuring helpers used to line things up to the exact pixel.
+const TextMetrics = {
+  // Distance from the top of an element's line box to its text baseline, in the
+  // element's own CSS px (works with the page's zoom scaling).
+  baseline(el, lineHeight) {
+    const marker = document.createElement('span');
+    marker.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    el.appendChild(marker);
+    const r = el.getBoundingClientRect();
+    const m = marker.getBoundingClientRect();
+    marker.remove();
+    return r.height ? ((m.bottom - r.top) / r.height) * lineHeight : lineHeight * 0.8;
+  },
+  // How far the drawn letters reach above / below the baseline.
+  ink(text, font) {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = font;
+    const m = ctx.measureText(text);
+    return { ascent: m.actualBoundingBoxAscent, descent: m.actualBoundingBoxDescent };
+  },
+};
+
+// Run fn again once web fonts have finished loading (metrics change when they do).
+function whenFontsLoad(fn) {
+  if (!document.fonts) return;
+  document.fonts.ready.then(fn);
+  document.fonts.addEventListener?.('loadingdone', fn);
+}
+
 const WORDMARK_SETTINGS = {
 
   header: { align: 'flush', speedMin: 0.5, speedMax: 3, ampMin: 5,  ampMax: 30 },
   // phone: letters start right under the gradient module; desktop/tablet: letters sit
   // on the very bottom edge of the page (baseline = bottom, "tramontana" has no descenders)
-  footer: { align: () => (Stage.isPhone() ? 'flush' : 'baseline'), speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
+  footer: { align: () => (Stage.isPhone() ? 'flush' : 'baseline'), onMeasure: alignNoCookies, speedMin: 1,   speedMax: 2, ampMin: 10, ampMax: 20 },
 };
+
+// Desktop/tablet: the top of "No coookies, no policy" lines up with the top of the footer logo.
+function alignNoCookies({ stageTop, top, baseline, ink }) {
+  const el = document.querySelector('.no-cookies');
+  if (!el) return;
+  el.style.top = '';
+  if (Stage.isPhone()) return;
+  const cs = getComputedStyle(el);
+  const lineHeight = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize);
+  const elBaseline = TextMetrics.baseline(el, lineHeight);
+  const elInk = TextMetrics.ink(el.textContent.trim(), cs.font);
+  const logoInkTop = stageTop + top + baseline - ink.ascent;
+  el.style.top = logoInkTop - (elBaseline - elInk.ascent) + 'px';
+}
 
 function initWordmark(stage, settings) {
   const LETTERS = 'tramontana'.split('');
@@ -47,21 +90,6 @@ function initWordmark(stage, settings) {
     speed = map(w.speed, settings.speedMin, settings.speedMax);
     amp = map(w.gusts, settings.ampMin, settings.ampMax);
   });
-
-  // Where the text baseline and the top of the letters sit inside a line of height
-  // fontSize, measured from the real font so alignment stays exact.
-  const metricsCache = {};
-  function fontMetrics(fontSize) {
-    const key = fontSize + '|' + document.fonts.status;
-    if (metricsCache.key === key) return metricsCache.value;
-    const ctx = document.createElement('canvas').getContext('2d');
-    ctx.font = `400 ${fontSize}px ${getComputedStyle(stage).getPropertyValue('--sans') || 'sans-serif'}`;
-    const m = ctx.measureText(LETTERS.join(''));
-    const baseline = (fontSize - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
-    metricsCache.key = key;
-    metricsCache.value = { baseline, inkTop: baseline - m.actualBoundingBoxAscent };
-    return metricsCache.value;
-  }
 
   const word = document.createElement('div');
   word.className = 'wordmark__word';
@@ -87,16 +115,20 @@ function initWordmark(stage, settings) {
     fontSize = Math.min(width / 18, 72);
     word.style.fontSize = fontSize + 'px';
     word.style.left = width * 0.1 + 'px';
+    // Baseline measured in the browser itself, ink height from the actual letter shapes,
+    // so the alignment is exact for whatever font has loaded.
+    const baseline = TextMetrics.baseline(spans[0], fontSize);
+    const ink = TextMetrics.ink(LETTERS.join(''), `400 ${fontSize}px ${cs.getPropertyValue('--sans') || 'sans-serif'}`);
     const align = typeof settings.align === 'function' ? settings.align() : settings.align;
-    const fm = fontMetrics(fontSize);
-    const top = align === 'flush' ? -fm.inkTop            // top of letters on the top edge
-      : align === 'baseline' ? height - fm.baseline        // bottom of letters on the bottom edge
+    const top = align === 'flush' ? ink.ascent - baseline     // top of letters on the top edge
+      : align === 'baseline' ? height - baseline              // bottom of letters on the bottom edge
       : height - fontSize;
     word.style.top = top + 'px';
+    if (settings.onMeasure) settings.onMeasure({ stageTop: parseFloat(cs.top) || 0, top, baseline, ink });
   }
   measure();
   Stage.onChange(measure);
-  if (document.fonts) document.fonts.ready.then(measure);
+  whenFontsLoad(measure);
 
   // Letters are shifted with transforms instead of margins, so the browser can move
   // them without re-laying out the page on every frame.

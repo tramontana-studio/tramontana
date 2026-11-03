@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache-bust CSS/JS so browsers load the new version
+        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::7}/g" index.html
+
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
