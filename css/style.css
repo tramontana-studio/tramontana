@@ -303,7 +303,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     width: calc((var(--vw, 320px) - 40px) * var(--photo-scale)); height: calc(300px * var(--photo-scale)); z-index: 335;
   }
   .team-plus { display: block; left: calc(var(--vw, 320px) / 2 - 25px); top: calc(3481px + var(--g1) + 300px * (1 - var(--photo-scale) / 2) - 25px); width: 50px; height: 50px; z-index: 336; pointer-events: none; }
-  .team-names { left: 0; top: calc(3775px + var(--g1) + var(--g2)); z-index: 338; }
+  /* names start right at the bottom edge of the photo (3481 + 300): the first line is
+     trimmed to the top of its capital letters so there's no space above "Gaël" */
+  .team-names { left: 0; top: calc(3781px + var(--g1)); z-index: 338; }
+  .team-names .member:first-child .member__name { text-box: trim-start cap alphabetic; }
+  @supports not (text-box: trim-start cap alphabetic) {
+    .team-names { margin-top: -5px; }
+  }
   .story      { left: 0; top: calc(4280px + var(--shift)); width: calc(var(--vw, 320px) - 44px); line-height: 28px; z-index: 337; }
   @supports not (text-box: trim-end text text) {
     .story { transform: translateY(-100%); }
