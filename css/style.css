@@ -247,6 +247,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 @media (max-width: 599px) {
 
+  .page { --photo-scale: 1; } /* phone: portrait at original size */
+
   .page {
     --g1: 160px;
     --g2: 10px;
