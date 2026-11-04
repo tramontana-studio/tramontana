@@ -141,7 +141,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @keyframes marquee { to { transform: translateX(-50%); } }
 
 .team-bg { display: none; }
-.team-photo { left: 186px; top: 3366px; width: 652px; height: 402px; z-index: 331; background: var(--placeholder); }
+.page { --photo-scale: .75; } /* portrait size: 1 = original, .75 = 25% smaller */
+/* stays centred and keeps its bottom edge, so the names below don't move */
+.team-photo {
+  left: calc(186px + 652px * (1 - var(--photo-scale)) / 2);
+  top: calc(3366px + 402px * (1 - var(--photo-scale)));
+  width: calc(652px * var(--photo-scale)); height: calc(402px * var(--photo-scale));
+  z-index: 331; background: var(--placeholder);
+}
 
 .team-popup { left: 186px; top: 3366px; width: 652px; height: 402px; z-index: 341; }
 .bio { position: absolute; width: 543px; font: var(--font-text); }
@@ -288,8 +295,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .about .close, .team-popup .close { top: 20px; right: 20px; }
 
   .team-bg    { display: block; left: 0; top: calc(3481px + var(--g1)); width: 100%; height: calc(799px + var(--g2) + var(--g3)); background: var(--paper); z-index: 333; }
-  .team-photo { left: 20px; top: calc(3481px + var(--g1)); width: calc(var(--vw, 320px) - 40px); height: 300px; z-index: 335; }
-  .team-plus { display: block; left: calc(var(--vw, 320px) / 2 - 25px); top: calc(3481px + var(--g1) + 125px); width: 50px; height: 50px; z-index: 336; pointer-events: none; }
+  .team-photo {
+    left: calc(20px + (var(--vw, 320px) - 40px) * (1 - var(--photo-scale)) / 2);
+    top: calc(3481px + var(--g1) + 300px * (1 - var(--photo-scale)));
+    width: calc((var(--vw, 320px) - 40px) * var(--photo-scale)); height: calc(300px * var(--photo-scale)); z-index: 335;
+  }
+  .team-plus { display: block; left: calc(var(--vw, 320px) / 2 - 25px); top: calc(3481px + var(--g1) + 300px * (1 - var(--photo-scale) / 2) - 25px); width: 50px; height: 50px; z-index: 336; pointer-events: none; }
   .team-names { left: 0; top: calc(3775px + var(--g1) + var(--g2)); z-index: 338; }
   .story      { left: 0; top: calc(4280px + var(--shift)); width: calc(var(--vw, 320px) - 44px); line-height: 28px; z-index: 337; }
   @supports not (text-box: trim-end text text) {
