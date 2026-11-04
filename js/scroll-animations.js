@@ -35,8 +35,10 @@ const ANIMATIONS = {
       { delay: 330, speed: 2, ease: 'inOut', fromOpacity: 0, opacity: 1 },
       { delay: 3155, speed: 0.5, ease: 'inOut', opacity: 0 },
     ],
+    // end: 'page' -> the glow finishes its path exactly when the page reaches the bottom
     '.sun': {
       start: 'bottom',
+      end: 'page',
       steps: [{ ease: 'inOut', x: 866, y: 377, curve: [[272, 3], [554, 5]] }],
     },
   },
@@ -80,7 +82,8 @@ const ANIMATIONS = {
       { ease: 'inOut', opacity: 0 },
     ],
     '.sun': {
-      start: 'center',
+      start: 'bottom',
+      end: 'page',
       steps: [{ ease: 'inOut', x: 304, y: 240, curve: [[152, 61], [184, 60]] }],
     },
   },
@@ -180,11 +183,16 @@ const ANIMATIONS = {
       state = to;
       return seg;
     });
-    return { el, segments, offscreen };
+    return { el, segments, offscreen, endAtPage: def.end === 'page' };
   }
 
-  function render(timeline, scroll) {
+  function render(timeline, scroll, maxScroll) {
     const { el, segments } = timeline;
+    if (timeline.endAtPage) {
+      // stretch the last segment so it ends exactly at the bottom of the page
+      const last = segments[segments.length - 1];
+      last.duration = Math.max(1, maxScroll - last.start);
+    }
     let value = segments[0].from;
     for (const seg of segments) {
       if (scroll < seg.start) break;
@@ -233,8 +241,12 @@ const ANIMATIONS = {
   }
 
   function update() {
-    const scroll = Stage.scrollTop();
-    timelines.forEach((t) => render(t, scroll));
+    // Live max scroll (changes when the phone's browser bar shows/hides). Clamping the
+    // scroll value stops the bounce/overscroll at the top and bottom of the page from
+    // pushing animations back and forth.
+    const maxScroll = Math.max(0, (document.documentElement.scrollHeight - window.innerHeight) / Stage.scale);
+    const scroll = Math.min(Math.max(0, Stage.scrollTop()), maxScroll);
+    timelines.forEach((t) => render(t, scroll, maxScroll));
   }
 
   let ticking = false;
