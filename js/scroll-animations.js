@@ -39,6 +39,7 @@ const ANIMATIONS = {
     '.sun': {
       start: 'bottom',
       end: 'page',
+      smooth: true,
       steps: [{ ease: 'inOut', x: 866, y: 377, curve: [[272, 3], [554, 5]] }],
     },
   },
@@ -84,6 +85,7 @@ const ANIMATIONS = {
     '.sun': {
       start: 'bottom',
       end: 'page',
+      smooth: true,
       steps: [{ ease: 'inOut', x: 304, y: 240, curve: [[152, 61], [184, 60]] }],
     },
   },
@@ -119,17 +121,19 @@ const ANIMATIONS = {
       };
     };
     const samples = [{ ...point(0), d: 0 }];
-    for (let i = 1; i <= 100; i++) {
-      const p = point(i / 100), prev = samples[i - 1];
+    const N = 400;
+    for (let i = 1; i <= N; i++) {
+      const p = point(i / N), prev = samples[i - 1];
       samples.push({ ...p, d: prev.d + Math.hypot(p.x - prev.x, p.y - prev.y) });
     }
-    const length = samples[100].d;
+    const length = samples[N].d;
     return {
       length,
       at(progress) {
         const d = progress * length;
-        let i = 1;
-        while (i < 100 && samples[i].d < d) i++;
+        let lo = 1, hi = N;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (samples[mid].d < d) lo = mid + 1; else hi = mid; }
+        const i = lo;
         const a = samples[i - 1], b = samples[i];
         const f = b.d === a.d ? 0 : (d - a.d) / (b.d - a.d);
         return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
@@ -183,16 +187,11 @@ const ANIMATIONS = {
       state = to;
       return seg;
     });
-    return { el, segments, offscreen, endAtPage: def.end === 'page' };
+    return { el, segments, offscreen, endAtPage: def.end === 'page', smooth: !!def.smooth };
   }
 
-  function render(timeline, scroll, maxScroll) {
+  function render(timeline, scroll) {
     const { el, segments } = timeline;
-    if (timeline.endAtPage) {
-      // stretch the last segment so it ends exactly at the bottom of the page
-      const last = segments[segments.length - 1];
-      last.duration = Math.max(1, maxScroll - last.start);
-    }
     let value = segments[0].from;
     for (const seg of segments) {
       if (scroll < seg.start) break;
@@ -237,23 +236,61 @@ const ANIMATIONS = {
       document.body.style.setProperty('--ts', shift + 'px');
       timelines = make();
     }
+    // Stretch 'end: page' animations so they finish exactly at the bottom of the page.
+    // Uses the tallest viewport (phone browser bar hidden) so the end is always reachable,
+    // and is computed once per layout so the path doesn't change while the bar slides.
+    const pageEnd = pageEndScroll();
+    timelines.filter((t) => t.endAtPage).forEach((t) => {
+      const last = t.segments[t.segments.length - 1];
+      last.duration = Math.max(1, pageEnd - last.start);
+    });
+    timelines.forEach((t) => { t.shown = undefined; });
     update();
+    lastFrame = 0;
   }
 
-  function update() {
-    // Live max scroll (changes when the phone's browser bar shows/hides). Clamping the
-    // scroll value stops the bounce/overscroll at the top and bottom of the page from
-    // pushing animations back and forth.
-    const maxScroll = Math.max(0, (document.documentElement.scrollHeight - window.innerHeight) / Stage.scale);
-    const scroll = Math.min(Math.max(0, Stage.scrollTop()), maxScroll);
-    timelines.forEach((t) => render(t, scroll, maxScroll));
+  const lvhProbe = document.createElement('div');
+  lvhProbe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100vh;height:100lvh;visibility:hidden;pointer-events:none';
+  document.documentElement.appendChild(lvhProbe);
+  function pageEndScroll() {
+    const tallest = Math.max(window.innerHeight, lvhProbe.getBoundingClientRect().height);
+    return Math.max(0, (document.documentElement.scrollHeight - tallest) / Stage.scale);
   }
 
-  let ticking = false;
+  // Smoothed animations ('smooth: true') glide toward the scroll position instead of
+  // jumping to it, so uneven scroll steps on phones don't show as jerky movement.
+  const SMOOTH_TIME = 0.14; // seconds to cover ~63% of the remaining distance
+  let lastFrame = 0, frame = 0;
+
+  function currentScroll() {
+    // Clamp so the bounce/overscroll at the top and bottom of the page is ignored.
+    const max = Math.max(0, (document.documentElement.scrollHeight - window.innerHeight) / Stage.scale);
+    return Math.min(Math.max(0, Stage.scrollTop()), max);
+  }
+
+  function update(now = performance.now()) {
+    const scroll = currentScroll();
+    // First frame after a pause counts as one normal frame (1/60 s).
+    const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 1 / 60;
+    lastFrame = now;
+    const k = 1 - Math.exp(-dt / SMOOTH_TIME);
+    let moving = false;
+    timelines.forEach((t) => {
+      if (!t.smooth) return render(t, scroll);
+      if (t.shown === undefined) { t.shown = scroll; return render(t, scroll); }
+      t.shown += (scroll - t.shown) * k;
+      if (Math.abs(scroll - t.shown) < 0.05) t.shown = scroll; else moving = true;
+      render(t, t.shown);
+    });
+    return moving;
+  }
+
+  function tick(now) {
+    frame = update(now) ? requestAnimationFrame(tick) : 0;
+    if (!frame) lastFrame = 0;
+  }
   window.addEventListener('scroll', () => {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => { update(); ticking = false; });
+    if (!frame) frame = requestAnimationFrame(tick);
   }, { passive: true });
 
   Stage.onChange(build);
